@@ -1,50 +1,30 @@
-// Simple API Key encryption using Web Crypto API
-// Uses PBKDF2 + AES-GCM with device-derived key material
-const STORAGE_KEY = 'gk_encrypted_key';
+// Simple API Key storage using localStorage with basic obfuscation
+// Web Crypto API (crypto.subtle) requires secure context which may not be
+// available in all Android WebView environments
+const STORAGE_KEY = 'gk_api_key';
 
-async function deriveKey(salt: Uint8Array): Promise<CryptoKey> {
-  const material = [
-    navigator.userAgent || '',
-    navigator.language || '',
-    screen.width + 'x' + screen.height,
-  ].join('|');
+// Simple XOR obfuscation with device-derived key
+function obfuscate(text: string): string {
+  const seed = (navigator.userAgent || 'gaokao').length + screen.width;
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    result += String.fromCharCode(text.charCodeAt(i) ^ (seed + i) % 256);
+  }
+  return btoa(result);
+}
 
-  const enc = new TextEncoder();
-  const keyMaterial = await crypto.subtle.importKey(
-    'raw', enc.encode(material), 'PBKDF2', false, ['deriveKey']
-  );
-
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  return crypto.subtle.deriveKey(
-    { name: 'PBKDF2', salt: salt as any, iterations: 100000, hash: 'SHA-256' },
-    keyMaterial,
-    { name: 'AES-GCM', length: 256 },
-    false,
-    ['encrypt', 'decrypt']
-  );
+function deobfuscate(encoded: string): string {
+  const seed = (navigator.userAgent || 'gaokao').length + screen.width;
+  const text = atob(encoded);
+  let result = '';
+  for (let i = 0; i < text.length; i++) {
+    result += String.fromCharCode(text.charCodeAt(i) ^ (seed + i) % 256);
+  }
+  return result;
 }
 
 export async function encryptApiKey(plaintext: string): Promise<string> {
-  const salt = new Uint8Array(16);
-  crypto.getRandomValues(salt);
-  const iv = new Uint8Array(12);
-  crypto.getRandomValues(iv);
-
-  const key = await deriveKey(salt);
-  const enc = new TextEncoder();
-  const ciphertext = await crypto.subtle.encrypt(
-    { name: 'AES-GCM', iv: iv as any } as any,
-    key,
-    enc.encode(plaintext)
-  );
-
-  const bundle = {
-    s: btoa(String.fromCharCode(...salt)),
-    i: btoa(String.fromCharCode(...iv)),
-    c: btoa(String.fromCharCode(...new Uint8Array(ciphertext))),
-  };
-
-  const result = JSON.stringify(bundle);
+  const result = obfuscate(plaintext);
   localStorage.setItem(STORAGE_KEY, result);
   return result;
 }
@@ -52,23 +32,10 @@ export async function encryptApiKey(plaintext: string): Promise<string> {
 export async function decryptApiKey(): Promise<string | null> {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return null;
-
   try {
-    const bundle = JSON.parse(stored);
-    const salt = Uint8Array.from(atob(bundle.s) as any, (c: string) => c.charCodeAt(0));
-    const iv = Uint8Array.from(atob(bundle.i) as any, (c: string) => c.charCodeAt(0));
-    const ciphertext = Uint8Array.from(atob(bundle.c) as any, (c: string) => c.charCodeAt(0));
-
-    const key = await deriveKey(salt);
-    const dec = new TextDecoder();
-    const plaintext = await crypto.subtle.decrypt(
-      { name: 'AES-GCM', iv: iv as any } as any,
-      key,
-      ciphertext as any
-    );
-
-    return dec.decode(plaintext);
+    return deobfuscate(stored);
   } catch {
+    localStorage.removeItem(STORAGE_KEY);
     return null;
   }
 }

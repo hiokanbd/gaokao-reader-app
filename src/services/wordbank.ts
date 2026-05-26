@@ -21,6 +21,8 @@ const BUILTIN_BANKS = [
   { path: '/vocab/gaokao_800.json', colorIdx: 0 },
   { path: '/vocab/middle_school.json', colorIdx: 1 },
   { path: '/vocab/elementary.json', colorIdx: 6 },
+  { path: '/vocab/cet4.json', colorIdx: 2 },
+  { path: '/vocab/cet6.json', colorIdx: 3 },
 ];
 
 function getDB(): Promise<IDBDatabase> {

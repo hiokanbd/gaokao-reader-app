@@ -109,7 +109,7 @@ export const ChatView: React.FC<Props> = ({ onViewArticle }) => {
   const lastArticle = [...messages].reverse().find(m => m.hasArticle);
 
   return (
-    <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 100px)' }}>
+    <div style={{ maxWidth: 700, margin: '0 auto', display: 'flex', flexDirection: 'column', height: 'calc(100vh - 70px)' }}>
       {/* Header */}
       <div style={{
         textAlign: 'center', padding: '12px 0',

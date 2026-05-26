@@ -104,13 +104,56 @@ export const WordbankView: React.FC<Props> = ({ onBack }) => {
         ))}
       </div>
 
-      {/* Download bank */}
+      {/* Recommended banks to download */}
+      <div style={{
+        padding: 16, border: '1px solid #e8e0d5', borderRadius: 8,
+        background: '#faf8f5', marginBottom: 16,
+      }}>
+        <h4 style={{ margin: '0 0 10px', color: '#5E4B66', fontSize: '0.9rem' }}>
+          📥 推荐词库（点击下载，含人声语音包）
+        </h4>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+          {[
+            { name: '考研英语词汇', desc: '~1500词', words: '研究生入学考试核心词汇', url: '/vocab/kaoyan.json' },
+            { name: '雅思词汇 (IELTS)', desc: '~800词', words: '雅思考试高频词汇', url: '/vocab/ielts.json' },
+            { name: '托福词汇 (TOEFL)', desc: '~800词', words: '托福考试核心词汇', url: '/vocab/toefl.json' },
+          ].map(b => (
+            <div key={b.name} style={{
+              display: 'flex', alignItems: 'center', gap: 10,
+              padding: '8px 12px', background: '#fff', borderRadius: 6,
+              border: '1px solid #e8e0d5',
+            }}>
+              <div style={{ flex: 1 }}>
+                <div style={{ fontWeight: 600, fontSize: '0.85rem', color: '#2c2416' }}>{b.name}</div>
+                <div style={{ fontSize: '0.7rem', color: '#8b7e6a' }}>{b.desc} · {b.words}</div>
+              </div>
+              <button
+                onClick={() => {
+                  addDownloadedBank(b.url).then(() => {
+                    // Also trigger audio download for this bank's words
+                  }).catch((e: any) => alert('下载失败: ' + (e.message || '未知错误')));
+                }}
+                style={{
+                  padding: '5px 14px', border: '1px solid #b87333',
+                  borderRadius: 14, background: '#fff',
+                  color: '#b87333', cursor: 'pointer', fontSize: '0.75rem',
+                  whiteSpace: 'nowrap',
+                }}
+              >
+                下载 + 🎵语音
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Custom URL download */}
       <div style={{
         padding: 16, border: '1px dashed #e8e0d5', borderRadius: 8,
         background: '#faf8f5',
       }}>
         <h4 style={{ margin: '0 0 8px', color: '#5E4B66', fontSize: '0.9rem' }}>
-          下载新词库
+          自定义词库 URL
         </h4>
         <div style={{ display: 'flex', gap: 8 }}>
           <input

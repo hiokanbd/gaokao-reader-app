@@ -1,0 +1,15 @@
+{
+  "appId": "com.xilian.app",
+  "appName": "Gaokao Reader",
+  "webDir": "dist",
+  "bundledWebRuntime": false,
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": false
+  },
+  "server": {
+    "androidScheme": "http",
+    "cleartext": true
+  }
+}
